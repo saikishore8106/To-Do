@@ -253,14 +253,6 @@ docker push yourdockerhubusername/todo-frontend
 
 ---
 
-## 👨‍💻 Author
-
-**Your Name**  
-GitHub: [@yourgithubusername](https://github.com/yourgithubusername)  
-YouTube: [@yourchannelname](https://youtube.com/@yourchannelname)
-
----
-
 ### ✅ Summary
 
 | URL | Description |
