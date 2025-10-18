@@ -21,7 +21,7 @@ This guide explains how to deploy a **full-stack To-Do App** (React Frontend + F
 ---
 ## Project Architecture
 
-![Project Architecture](assets\kubernetsarch.png)
+![Project Architecture](assets/kubernetsarch.png)
 
 ---
 
