@@ -6,16 +6,22 @@ This guide explains how to deploy a **full-stack To-Do App** (React Frontend + F
 
 ## 🧩 Project Architecture
 
-EKS Cluster (AWS)
-│
-├── frontend-service (LoadBalancer)
-│    └── React + Nginx container
-│
-├── backend-service (ClusterIP)
-│    └── FastAPI + SQLAlchemy container
-│
-└── postgres-service (ClusterIP)
-     └── PostgreSQL 17 container
+```bash 
+    EKS Cluster (AWS)
+    │
+    ├── frontend-service (LoadBalancer)
+    │    └── React + Nginx container
+    │
+    ├── backend-service (ClusterIP)
+    │    └── FastAPI + SQLAlchemy container
+    │
+    └── postgres-service (ClusterIP)
+        └── PostgreSQL 17 container
+```
+---
+## Project Architecture
+
+![Project Architecture](assets\kubernetsarch.png)
 
 ---
 
