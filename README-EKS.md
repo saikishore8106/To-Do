@@ -308,3 +308,195 @@ You have successfully deployed a **Dockerized Full-Stack App** (React + FastAPI 
 ### 👨‍💻 Author
 **Sai Chandra Reddy**  
 Full Stack | DevOps | Cloud Enthusiast
+
+---
+
+# 🧭 EKS Dashboard & Cluster Management Guide
+
+## 🧱 View Your Cluster on AWS EKS Console
+
+1. Go to 👉 [https://console.aws.amazon.com/eks](https://console.aws.amazon.com/eks)
+2. Make sure you’re in the **same region** (e.g., `ap-south-1`).
+3. Click on your cluster name — e.g., `todo-cluster`
+4. You’ll now see the **Cluster Overview** page:
+   - Cluster status (Active/Deleting)
+   - Kubernetes version
+   - VPC & networking info
+   - Node groups
+   - Add-ons (CoreDNS, VPC CNI, kube-proxy)
+5. Open the **Compute** tab → shows all **node groups (EC2 worker nodes)**
+
+---
+
+## 🧰 Check Cluster from CLI
+
+### Check all clusters:
+```bash
+aws eks list-clusters --region ap-south-1
+```
+
+### Describe specific cluster:
+```bash
+aws eks describe-cluster --name todo-cluster --region ap-south-1
+```
+
+### Check node groups:
+```bash
+aws eks list-nodegroups --cluster-name todo-cluster --region ap-south-1
+```
+
+---
+
+# ❌ Deleting Node Groups & Cluster
+
+If you try to delete the cluster directly, you may see:
+> **Cluster has nodegroups attached. You can delete nodegroups at the cluster's compute tab.**
+
+That means you must delete node groups **before** deleting the cluster.
+
+---
+
+## 🟩 Option 1 — Delete via AWS Console
+1. Go to [EKS Console](https://console.aws.amazon.com/eks)
+2. Select your cluster → **Compute** tab
+3. Select node groups → Click **Delete**
+4. Wait until all node groups are gone
+5. Then delete the cluster from **Cluster Overview** page
+
+---
+
+## 🟦 Option 2 — Delete via eksctl CLI
+
+List node groups:
+```bash
+eksctl get nodegroup --cluster todo-cluster --region ap-south-1
+```
+
+Delete node groups:
+```bash
+eksctl delete nodegroup --cluster todo-cluster --region ap-south-1 --name <your-nodegroup-name>
+```
+
+Delete cluster:
+```bash
+eksctl delete cluster --name todo-cluster --region ap-south-1
+```
+
+---
+
+## 🟨 Option 3 — Delete via AWS CLI
+
+List node groups:
+```bash
+aws eks list-nodegroups --cluster-name todo-cluster --region ap-south-1
+```
+
+Delete node group:
+```bash
+aws eks delete-nodegroup --cluster-name todo-cluster --nodegroup-name <node-group-name> --region ap-south-1
+```
+
+Then delete cluster:
+```bash
+aws eks delete-cluster --name todo-cluster --region ap-south-1
+```
+
+---
+
+# 🧹 Full Cleanup (Optional)
+
+After deletion, AWS may leave behind:
+- EC2 instances (temporarily)
+- ELBs (from LoadBalancer services)
+- EBS volumes (if used)
+
+Check and delete from:
+- **EC2 → Instances**
+- **EC2 → Load Balancers**
+- **EC2 → Volumes**
+
+---
+
+# 🧾 Ready-to-Run Cleanup Script
+
+Create a script named **eks-delete-all.sh** and make it executable:
+```bash
+chmod +x eks-delete-all.sh
+```
+
+### Script:
+```bash
+#!/bin/bash
+CLUSTER_NAME="todo-cluster"
+REGION="ap-south-1"
+
+echo "🧹 Deleting all nodegroups for $CLUSTER_NAME in $REGION..."
+for ng in $(aws eks list-nodegroups --cluster-name $CLUSTER_NAME --region $REGION --query "nodegroups[]" --output text)
+do
+  echo "Deleting nodegroup: $ng"
+  eksctl delete nodegroup --cluster $CLUSTER_NAME --region $REGION --name $ng --wait
+done
+
+echo "🧹 Deleting EKS cluster..."
+eksctl delete cluster --name $CLUSTER_NAME --region $REGION
+
+echo "✅ Cleanup completed successfully!"
+```
+
+Run:
+```bash
+./eks-delete-all.sh
+```
+
+---
+
+# 🧠 Bonus: Enable EKS Dashboard Access
+
+If you want a **visual Kubernetes Dashboard**:
+```bash
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/aio/deploy/recommended.yaml
+kubectl create serviceaccount dashboard-admin-sa
+kubectl create clusterrolebinding dashboard-admin-sa --clusterrole=cluster-admin --serviceaccount=default:dashboard-admin-sa
+```
+
+Get access token:
+```bash
+kubectl get secret $(kubectl get sa dashboard-admin-sa -o jsonpath="{.secrets[0].name}") -o go-template="{{.data.token | base64decode}}"
+```
+
+Start proxy:
+```bash
+kubectl proxy
+```
+
+Open in browser:
+```
+http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/
+```
+
+Login with the token to access full dashboard 👨‍💻
+
+---
+
+# ✅ Summary
+
+| Action | Method | Command |
+|--------|---------|----------|
+| View Cluster | AWS Console | [https://console.aws.amazon.com/eks](https://console.aws.amazon.com/eks) |
+| Check Node Groups | CLI | `eksctl get nodegroup --cluster todo-cluster` |
+| Delete Node Groups | CLI | `eksctl delete nodegroup --cluster todo-cluster` |
+| Delete Cluster | CLI | `eksctl delete cluster --name todo-cluster` |
+| Dashboard Access | Local Proxy | `kubectl proxy` |
+
+---
+
+🎯 **You now have:**
+- A running EKS cluster with frontend, backend, and database  
+- Full AWS dashboard access  
+- A cleanup script for safe teardown  
+- Optional Kubernetes Dashboard for visual management  
+
+---
+
+🧑‍💻 *Maintained by:* **Sai Chandra Reddy**  
+*DevOps | Cloud | Full Stack Enthusiast*
