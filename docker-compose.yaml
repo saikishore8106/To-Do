@@ -1,0 +1,39 @@
+version: "3.8"
+services:
+  db:
+    image: postgres:15
+    container_name: todo-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: todo_db
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - todo-network
+
+  todo-backend:
+    build: ./backend
+    container_name: todo-backend
+    environment:
+      - DATABASE_URL=postgresql://postgres:1234@todo-db:5432/todo_db
+    depends_on:
+      - db
+    networks:
+      - todo-network
+
+  todo-frontend:
+    build: ./nginx
+    container_name: todo-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - todo-backend
+    networks:
+      - todo-network
+
+volumes:
+  db_data:
+
+networks:
+  todo-network:
